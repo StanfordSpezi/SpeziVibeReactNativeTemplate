@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import Alert from '@blazejkustra/react-native-alert';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -20,14 +20,21 @@ export default function ScheduleScreen() {
     }, [])
   );
 
-  const handleQuestionnaireOpen = async (_event: Event) => {
-    // __QUESTIONNAIRE_HANDLER__
-    // Questionnaire feature not installed - show helpful message
-    Alert.alert(
-      'Questionnaire Not Available',
-      'The questionnaire feature is not installed. Add it via the CLI with: npx @spezivibe/cli add questionnaire',
-      [{ text: 'OK' }]
-    );
+  const handleQuestionnaireOpen = async (event: Event) => {
+    if (event.task.questionnaireId) {
+      try {
+        router.push({
+          pathname: '/questionnaire/[id]',
+          params: {
+            id: event.task.questionnaireId,
+            taskId: event.task.id,
+            eventId: event.occurrence.index.toString()
+          },
+        });
+      } catch {
+        Alert.alert('Error', 'Failed to open questionnaire');
+      }
+    }
   };
 
   return (
