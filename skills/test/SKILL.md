@@ -1,3 +1,8 @@
+---
+name: test
+description: Generate Jest tests for React Native Template App components, services, hooks, and FHIR-related behaviors.
+---
+
 # Test Generator
 
 Generate Jest tests following project testing patterns for React Native and FHIR compliance.

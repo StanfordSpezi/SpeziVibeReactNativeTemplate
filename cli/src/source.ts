@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // GitHub repo for downloading templates
-const GITHUB_REPO = 'github:StanfordSpezi/SpeziVibe';
+const GITHUB_REPO = 'github:CS342/ReactNativeTemplateApplication';
 
 // Cache directory for downloaded templates
 const CACHE_DIR = path.join(os.homedir(), '.cache', 'spezivibe');

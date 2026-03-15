@@ -1,3 +1,8 @@
+---
+name: feature
+description: Create or extend React Native app features, screens, hooks, and components within the React Native Template App architecture.
+---
+
 # Feature Generator
 
 Create new features and screens for your digital health app.

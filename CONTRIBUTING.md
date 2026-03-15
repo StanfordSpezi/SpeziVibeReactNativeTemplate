@@ -1,11 +1,11 @@
-# Contributing to SpeziVibe
+# Contributing to the React Native Template App
 
-Thank you for your interest in contributing to SpeziVibe! This guide will help you get started.
+Thank you for your interest in contributing to the React Native Template App. This guide will help you get started.
 
 ## Getting Started
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/SpeziVibe.git`
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/ReactNativeTemplateApplication.git`
 3. Install dependencies: `npm install`
 4. Build packages: `npm run build`
 5. Run tests: `npm test`
@@ -145,4 +145,4 @@ Contributors will be:
 - Listed in future releases
 - Part of the Stanford Spezi ecosystem
 
-Thank you for contributing to SpeziVibe! 🎉
+Thank you for contributing to the React Native Template App.

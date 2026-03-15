@@ -1,126 +1,70 @@
-<div align="center">
-  <img src="template/assets/images/rocket-logo.png" alt="SpeziVibe Logo" width="200"/>
+# React Native Template App
 
-  # SpeziVibe
+Reusable React Native and Expo template infrastructure for digital health applications.
 
-  **Digital health app templates designed for AI coding tools**
+This template has already been used successfully by five teams in the 2025/26 offering of CS342 Building for Digital Health. That track record reflects a substantial amount of thoughtful work from students, contributors, and collaborators who helped shape it into a practical starting point for teams moving from a health-app idea to a working cross-platform prototype.
 
-  [![Build and Test](https://github.com/StanfordSpezi/SpeziVibe/actions/workflows/ci.yml/badge.svg)](https://github.com/StanfordSpezi/SpeziVibe/actions/workflows/ci.yml)
-  [![Built with Expo](https://img.shields.io/badge/Built%20with-Expo-000020.svg?style=flat&logo=expo)](https://expo.dev)
-  [![React Native](https://img.shields.io/badge/React%20Native-0.81-61DAFB.svg?style=flat&logo=react)](https://reactnative.dev)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6.svg?style=flat&logo=typescript)](https://www.typescriptlang.org)
-</div>
-
----
-
-## About
-
-SpeziVibe is a toolkit for rapidly building digital health apps using [React Native](https://reactnative.dev/), [Expo](https://expo.dev/) and AI coding tools.
+[Spezi Vibe](https://github.com/StanfordSpezi/SpeziVibe) is a good place to start before diving into implementation. It provides installable planning and setup skills that can help teams move from needs finding through prototyping in a more structured way.
 
 ## Quick Start
-
-The SpeziVibe command line interface (CLI) allows you to quickly scaffold an app with pre-built features that can then be customized using AI coding tools.
-
-**Prerequisites:** 
-[Node.js 20+](https://nodejs.org/en)
 
 ```bash
 npx create-spezivibe-app my-app
 ```
 
-The CLI will prompt you to choose a backend and features, then generate a complete Expo app in a directory of your choosing. You can then run the app using the following command in the newly created app directory:
+The CLI prompts for a backend and optional features, then generates a React Native application from this template.
+
+## What This Repository Owns
+
+- `cli/` for app generation
+- `template/` for the base generated app
+- `features/` for additive feature manifests
+- `packages/` for reusable React Native libraries
+- `skills/` for React Native specific implementation skills
+
+Generated apps now embed a `skills/` folder instead of legacy `.claude/commands`.
+
+## Skills
+
+React Native specific skills live in [skills/](skills/) and are synced into [template/skills/](template/skills/) for generated apps.
+
+Run:
 
 ```bash
-npx expo start
+npm run sync:skills
 ```
 
-Once running, press `i` for iOS, `a` for Android, or `w` for Web.
+after editing any React Native skill definitions.
 
-### HealthKit: Custom Dev Client Required
+## How This Fits With Spezi Vibe
 
-If you selected the **HealthKit** feature, you cannot use Expo Go because HealthKit requires native iOS code. You'll need to create a custom development client:
+Spezi Vibe is the broader skills package for digital health vibe coding. A useful pattern is:
 
-```bash
-npx expo run:ios
-```
+1. use Spezi Vibe to explore the problem, define the need, choose a platform, and structure the solution
+2. use this React Native Template App when the project is best served by a cross-platform app
+3. use the repo-local skills here for implementation, testing, release notes, and app-specific iteration
 
-This command will:
-1. Generate the native iOS project (if not already present)
-2. Build the app with HealthKit capabilities
-3. Install it on your iOS Simulator or connected device
+## Contributing
 
-> **Note:** HealthKit only works on iOS. For physical devices, you'll need an Apple Developer account and proper provisioning profiles.
+This repository already represents meaningful work from multiple teams, and contributions are more than welcome to help it grow further. Improvements to the generator, template architecture, reusable packages, platform integrations, documentation, and developer experience all help build on that foundation.
 
-After the initial build, you can use `npx expo start` for faster development iterations - it will automatically connect to your custom dev client instead of Expo Go.
+Promising next steps include:
 
-## Backends
+- creating React Native bridges for existing iOS and Android modules in the broader Spezi ecosystem
+- publishing those bridges as reusable packages so they can be adopted across React Native health apps
+- integrating those published packages back into this template in a clean, maintainable way
+- continuing to mature this work so it can eventually move into the broader Spezi organization
 
-SpeziVibe comes with the following pre-built backend integrations you can add into your template:
-
-| Backend | Description |
-|---------|-------------|
-| **Medplum** | FHIR R4 healthcare backend with [Medplum](https://medplum.com), cloud-based or self-hosted |
-| **Firebase** | Google Cloud-based backend with authentication and data store |
-| **Local** | On-device data storage, no server required |
-
-## Features
-
-SpeziVibe comes with pre-built features you can add into your template to help you get started faster:
-
-| Feature | Description |
-|---------|-------------|
-| **Chat** | AI chat interface with OpenAI, Anthropic, or Google integration |
-| **Scheduler** | Task scheduling and recurring reminders |
-| **Questionnaire** | FHIR-compliant questionnaires |
-| **Onboarding** | Welcome flow with informed consent and account creation |
-| **HealthKit** | Apple Health integration for health data access (iOS only) |
-
-## Claude Code Commands
-
-Every generated app includes Claude Code slash commands for AI-assisted development. These are available in the `.claude/commands/` directory of your generated project.
-
-### Development Commands
-
-| Command | Description |
-|---------|-------------|
-| `/feature` | Create new app features, screens, tabs, hooks, and components |
-| `/test` | Generate Jest tests following project patterns (unit, component, FHIR round-trip) |
-| `/docs` | Generate documentation and READMEs for your app |
-| `/fhir` | Validate code for FHIR R4 compliance |
-| `/fhir-mapping` | Generate bidirectional FHIR resource mappings with round-trip tests |
-| `/fhir-designer` | Design FHIR data models from clinical concepts, generate sample JSON, recommend profiles |
-| `/changelog` | Generate changelogs from git history using Keep a Changelog format |
-| `/release` | Create release notes with migration guides for new versions |
-
-### Planning Commands
-
-| Command | Description |
-|---------|-------------|
-| `/study-planner` | Plan health studies, research protocols, data collection, and assessment schedules |
-| `/compliance` | Plan HIPAA, IRB, FDA, and GDPR regulatory compliance |
-| `/data-model` | Design health data models, FHIR resource structures, and HealthKit mappings |
-| `/ux-planner` | Design user flows, onboarding, engagement strategies, and accessibility |
-
-### Usage
-
-Invoke a command in Claude Code with optional context:
-
-```
-/feature add a medication tracking tab
-/study-planner design a 12-week diabetes management study
-/compliance review HIPAA requirements for our app
-/test write tests for the auth service
-```
-
-## Documentation
-
-- [Architecture Guide](./ARCHITECTURE.md) - System design and patterns
-- [CLI Guide](./cli/README.md) - CLI options and customization
-- [Contributing](./CONTRIBUTING.md) - How to contribute
+If you want to contribute, the roadmap above offers several high-impact places to jump in.
 
 ## License
 
-MIT License. See [Licenses](https://github.com/StanfordSpezi/Spezi/tree/main/LICENSES) for details.
+This project is licensed under the MIT License. See [LICENSE.md](LICENSE.md) and [LICENSES/](LICENSES/) for details.
 
-![Spezi Footer](https://raw.githubusercontent.com/StanfordSpezi/.github/main/assets/Footer.png#gh-light-mode-only)
-![Spezi Footer](https://raw.githubusercontent.com/StanfordSpezi/.github/main/assets/Footer~dark.png#gh-dark-mode-only)
+## Contributors
+
+This project is developed as part of the Stanford Mussallem Center for Biodesign at Stanford University.
+See [CONTRIBUTORS.md](CONTRIBUTORS.md) for the current contributor list.
+
+![Stanford Biodesign Footer](https://raw.githubusercontent.com/StanfordBDHG/.github/main/assets/biodesign-footer-light.png#gh-light-mode-only)
+![Stanford Biodesign Footer](https://raw.githubusercontent.com/StanfordBDHG/.github/main/assets/biodesign-footer-dark.png#gh-dark-mode-only)

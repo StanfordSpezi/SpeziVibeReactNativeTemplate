@@ -1,3 +1,8 @@
+---
+name: docs
+description: Generate or update React Native Template App documentation and README content using the repository's patterns and architecture.
+---
+
 # Documentation Generator
 
 Generate and update documentation for your digital health app.

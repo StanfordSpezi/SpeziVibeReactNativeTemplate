@@ -1,3 +1,8 @@
+---
+name: changelog
+description: Generate changelog entries for the React Native Template App and related packages from git history.
+---
+
 # Changelog Generator
 
 Generate changelogs from git history following Keep a Changelog format.

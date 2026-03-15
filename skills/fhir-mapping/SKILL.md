@@ -1,3 +1,8 @@
+---
+name: fhir-mapping
+description: Generate bidirectional FHIR R4 mappings for React Native Template App models and services.
+---
+
 # FHIR Mapping Generator
 
 Generate FHIR R4 resource mappings for healthcare data interoperability.

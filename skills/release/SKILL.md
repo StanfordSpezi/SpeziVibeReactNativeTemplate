@@ -1,3 +1,8 @@
+---
+name: release
+description: Create release notes and migration guidance for React Native Template App releases.
+---
+
 # Release Notes Generator
 
 Create release notes summarizing features, fixes, and breaking changes for releases.

@@ -1,3 +1,8 @@
+---
+name: fhir
+description: Review React Native Template App code and mappings for FHIR R4 compliance and interoperability issues.
+---
+
 # FHIR Compliance Checker
 
 Validate FHIR R4 compliance in your digital health app for healthcare data integrity.

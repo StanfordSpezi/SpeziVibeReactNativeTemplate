@@ -1,6 +1,6 @@
 # create-spezivibe-app
 
-Create a customized SpeziVibe health app template with the features you need.
+Create a customized React Native Template App with the features you need.
 
 ## Usage
 
@@ -44,6 +44,7 @@ A customized Expo + React Native app with:
 - Pre-configured `.env.example` and `.env` files
 - Firebase Emulator configuration (if Firebase selected)
 - Clean git history
+- Embedded `skills/` directory for repository-local implementation guidance
 - Ready to run with `npm install && npm start`
 
 ### Firebase Emulator Mode
