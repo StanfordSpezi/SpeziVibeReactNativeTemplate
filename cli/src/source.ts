@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // GitHub repo for downloading templates
-const GITHUB_REPO = 'github:CS342/ReactNativeTemplateApplication';
+const GITHUB_REPO = 'github:StanfordSpezi/SpeziVibeReactNativeTemplate';
 
 // Cache directory for downloaded templates
 const CACHE_DIR = path.join(os.homedir(), '.cache', 'spezivibe');
@@ -62,7 +62,9 @@ async function downloadFromGitHub(): Promise<SourcePaths> {
     useCache = cacheAge < oneHour;
   }
 
-  if (useCache && await fs.pathExists(path.join(CACHE_DIR, 'template'))) {
+  // Validate the cached template is real (not an empty directory left by a
+  // failed download) before trusting it.
+  if (useCache && await fs.pathExists(path.join(CACHE_DIR, 'template', 'package.json'))) {
     spinner.succeed('Using cached template');
     return {
       templateDir: path.join(CACHE_DIR, 'template'),
@@ -94,6 +96,15 @@ async function downloadFromGitHub(): Promise<SourcePaths> {
       force: true,
     });
 
+    // giget creates empty directories for nonexistent remote subpaths instead
+    // of failing — verify the download actually contains the template.
+    if (!(await fs.pathExists(path.join(CACHE_DIR, 'template', 'package.json')))) {
+      throw new Error(
+        `Download from ${GITHUB_REPO} produced an empty template directory. ` +
+        'The repository may have moved or its layout may have changed.'
+      );
+    }
+
     // Write cache timestamp
     await fs.writeFile(cacheMarker, Date.now().toString());
 
@@ -106,6 +117,8 @@ async function downloadFromGitHub(): Promise<SourcePaths> {
     };
   } catch (error) {
     spinner.fail('Failed to download template');
+    // Don't leave a poisoned cache behind — the next run should retry fresh.
+    await fs.remove(CACHE_DIR);
     throw new Error(
       `Failed to download template from GitHub. Please check your internet connection.\n${error}`
     );
