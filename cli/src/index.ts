@@ -111,7 +111,8 @@ async function main(): Promise<void> {
       if (err.message.includes('User force closed')) {
         blank();
         p(pc.yellow('Cancelled.'));
-        process.exit(0);
+        // Non-zero so wrappers and scripts can tell a cancel from a success.
+        process.exit(130);
       }
 
       p(pc.red(`Error: ${err.message}`));
