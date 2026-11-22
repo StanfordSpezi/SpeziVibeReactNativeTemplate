@@ -80,6 +80,7 @@
     ],
     "testMatch": [
       "**/__tests__/**/*.test.ts?(x)"
-    ]
+    ],
+    "globalSetup": "./jest.global-setup.js"
   }
 }

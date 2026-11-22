@@ -14,12 +14,19 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Alert from '@blazejkustra/react-native-alert';
-import { Formik, FormikProps } from 'formik';
+import { Formik, FormikProps, validateYupSchema, yupToFormErrors } from 'formik';
 import type { Questionnaire, QuestionnaireResponse, QuestionnaireResponseItem } from 'fhir/r4';
 import { QuestionnaireFormProps } from '../types';
 import { createValidationSchema } from '../validation/schema-builder';
+import { getDisabledLinkIds } from '../enablewhen/disabledItems';
+import { fromFhirDate, toFhirDate } from '../utils/fhirDate';
 import { defaultLightTheme, mergeTheme } from '../theme/default-theme';
 import { QuestionRenderer } from './QuestionRenderer';
+
+/** The value ChoiceQuestion stores for an answer option. */
+function optionValue(option: any): unknown {
+  return option.valueInteger ?? option.valueString ?? option.valueCoding?.code;
+}
 
 /**
  * Build initial FormikValues from FHIR QuestionnaireResponse or empty defaults
@@ -62,9 +69,9 @@ function buildInitialValues(
           else if (answer.valueInteger !== undefined) values[item.linkId] = answer.valueInteger;
           else if (answer.valueDecimal !== undefined) values[item.linkId] = answer.valueDecimal;
           else if (answer.valueString !== undefined) values[item.linkId] = answer.valueString;
-          else if (answer.valueDate !== undefined) values[item.linkId] = new Date(answer.valueDate);
+          else if (answer.valueDate !== undefined) values[item.linkId] = fromFhirDate(answer.valueDate);
           else if (answer.valueDateTime !== undefined) values[item.linkId] = new Date(answer.valueDateTime);
-          else if (answer.valueTime !== undefined) values[item.linkId] = answer.valueTime;
+          else if (answer.valueTime !== undefined) values[item.linkId] = answer.valueTime.slice(0, 5);
           else if (answer.valueCoding !== undefined) values[item.linkId] = answer.valueCoding.code;
         }
 
@@ -79,18 +86,19 @@ function buildInitialValues(
 }
 
 /**
- * Build FHIR QuestionnaireResponse from Formik values
+ * Build FHIR QuestionnaireResponse from Formik values. Items in `disabledLinkIds` (hidden by enableWhen) are left out.
  */
 function buildQuestionnaireResponse(
   questionnaire: Questionnaire,
-  values: Record<string, unknown>
+  values: Record<string, unknown>,
+  disabledLinkIds: ReadonlySet<string> = new Set()
 ): QuestionnaireResponse {
   const processItems = (items: any[] | undefined): QuestionnaireResponseItem[] => {
     if (!items) return [];
 
     return items
       .map((item: any): QuestionnaireResponseItem | null => {
-        if (!item.linkId) return null;
+        if (!item.linkId || disabledLinkIds.has(item.linkId)) return null;
 
         const value = values[item.linkId];
 
@@ -124,17 +132,23 @@ function buildQuestionnaireResponse(
         } else if (item.type === 'string' || item.type === 'text') {
           responseItem.answer = [{ valueString: value as string }];
         } else if (item.type === 'date') {
-          const date = value instanceof Date ? value : new Date(value as string);
-          responseItem.answer = [{ valueDate: date.toISOString().split('T')[0] }];
+          const date = value instanceof Date ? value : fromFhirDate(String(value));
+          responseItem.answer = [{ valueDate: toFhirDate(date) }];
         } else if (item.type === 'dateTime') {
           const date = value instanceof Date ? value : new Date(value as string);
           responseItem.answer = [{ valueDateTime: date.toISOString() }];
         } else if (item.type === 'time') {
-          responseItem.answer = [{ valueTime: value as string }];
+          // The form collects HH:MM; FHIR time needs seconds.
+          const time = String(value);
+          responseItem.answer = [{ valueTime: /^\d{2}:\d{2}$/.test(time) ? `${time}:00` : time }];
         } else if (item.type === 'choice' || item.type === 'open-choice') {
-          const option = item.answerOption?.find((opt: any) => opt.valueCoding?.code === value);
+          const option = item.answerOption?.find((opt: any) => optionValue(opt) === value);
           if (option?.valueCoding) {
             responseItem.answer = [{ valueCoding: option.valueCoding }];
+          } else if (option?.valueInteger !== undefined) {
+            responseItem.answer = [{ valueInteger: option.valueInteger }];
+          } else if (option?.valueString !== undefined) {
+            responseItem.answer = [{ valueString: option.valueString }];
           }
         }
 
@@ -174,9 +188,16 @@ export function QuestionnaireForm({
 
   const theme = useMemo(() => mergeTheme(userTheme, defaultLightTheme), [userTheme]);
 
-  const validationSchema = useMemo(
-    () => createValidationSchema(questionnaire.item || []),
-    [questionnaire.item]
+  // Which items are hidden depends on the answers so far, so the schema is built on every validation.
+  const validate = useCallback(
+    (values: Record<string, unknown>) => {
+      const disabled = getDisabledLinkIds(questionnaire, buildQuestionnaireResponse(questionnaire, values));
+      return validateYupSchema(values, createValidationSchema(questionnaire.item || [], disabled)).then(
+        () => ({}),
+        (error) => yupToFormErrors(error)
+      );
+    },
+    [questionnaire]
   );
 
   const initialValues = useMemo(
@@ -235,7 +256,9 @@ export function QuestionnaireForm({
   const handleSubmit = useCallback(async (values: Record<string, unknown>) => {
     setIsSubmitting(true);
     try {
-      const response = buildQuestionnaireResponse(questionnaire, values);
+      // Answers to questions that are hidden now (for example, after changing an earlier answer) are left out.
+      const disabled = getDisabledLinkIds(questionnaire, buildQuestionnaireResponse(questionnaire, values));
+      const response = buildQuestionnaireResponse(questionnaire, values, disabled);
 
       if (completionMessage) {
         setCompletedResponse(response);
@@ -324,7 +347,7 @@ export function QuestionnaireForm({
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
       <Formik
         initialValues={initialValues}
-        validationSchema={validationSchema}
+        validate={validate}
         onSubmit={handleSubmit}
         validateOnChange={true}
         validateOnBlur={true}>
