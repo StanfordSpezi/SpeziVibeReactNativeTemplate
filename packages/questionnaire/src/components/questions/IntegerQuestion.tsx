@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { FormikProps } from 'formik';
 import type { QuestionnaireItem } from 'fhir/r4';
 import { QuestionnaireTheme } from '../../types';
+import { useNumberInput } from './useNumberInput';
 
 interface IntegerQuestionProps {
   item: QuestionnaireItem;
@@ -54,6 +55,7 @@ export function IntegerQuestion({ item, formik, theme }: IntegerQuestionProps) {
   const hasError = formik.touched[linkId] && formik.errors[linkId];
   const { min, max } = getMinMax(item);
   const shouldRenderSlider = isSlider(item);
+  const { text, onChangeText, keyboardType } = useNumberInput(formik, linkId, { integer: true, min });
 
   // If range is reasonable (1-20), show buttons; otherwise show input
   const shouldShowButtons = !shouldRenderSlider && min !== undefined && max !== undefined && max - min <= 20;
@@ -139,13 +141,10 @@ export function IntegerQuestion({ item, formik, theme }: IntegerQuestionProps) {
               fontSize: theme.fontSize.md,
             },
           ]}
-          value={formik.values[linkId]?.toString() || ''}
-          onChangeText={(text) => {
-            const num = parseInt(text, 10);
-            formik.setFieldValue(linkId, isNaN(num) ? undefined : num);
-          }}
+          value={text}
+          onChangeText={onChangeText}
           onBlur={formik.handleBlur(linkId)}
-          keyboardType="number-pad"
+          keyboardType={keyboardType}
           accessibilityLabel={item.text}
           accessibilityHint="Enter a whole number"
         />

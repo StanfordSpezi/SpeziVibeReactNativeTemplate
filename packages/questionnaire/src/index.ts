@@ -15,6 +15,7 @@ export { EnableWhenEvaluator } from './enablewhen/EnableWhenEvaluator';
 
 // Validation
 export { createValidationSchema } from './validation/schema-builder';
+export type { ValidationSchemaOptions } from './validation/schema-builder';
 
 // Theme
 export { defaultLightTheme, defaultDarkTheme, mergeTheme } from './theme/default-theme';

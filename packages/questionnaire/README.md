@@ -16,6 +16,7 @@ A FHIR R4-compliant React Native questionnaire component library for healthcare 
 - [API Reference](#api-reference)
 - [Best Practices](#best-practices)
 - [Examples](#examples)
+- [Versioning](#versioning)
 
 ## Features
 
@@ -818,6 +819,15 @@ See [EXAMPLES.md](./EXAMPLES.md) for comprehensive examples including:
 - Complex health assessments
 - Pre-filled forms
 - Loading questionnaires from FHIR backends
+
+## Versioning
+
+Apps get a copy of this package when they're created, so an app keeps the version it was created with. Bump `version` in `package.json` whenever a change affects which questionnaires render correctly or what the response contains: the [Phoenix](https://stanfordbdhg.github.io/phoenix) compatibility checker uses it to tell apps apart (`--target react-native@<version>`).
+
+| Version | Changes |
+|---|---|
+| 1.1.0 | `QuestionnaireForm` validates every shown question (limits apply to optional questions) and skips hidden or unshown ones, so they no longer block Submit. Answers to hidden questions are treated as absent: they're left out of the response and don't keep other questions shown. Saves `valueString` and `valueInteger` choice answers, time answers as `hh:mm:ss`, and dates in local time. Number fields accept a decimal point, and a minus sign unless the minimum rules it out; the keyboard offers one when the minimum is negative. `createValidationSchema` now also validates optional questions, and takes `{ disabledLinkIds, onlyRendered }` options. |
+| 1.0.0 | First version. |
 
 ## Contributing
 

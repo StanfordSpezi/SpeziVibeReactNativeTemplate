@@ -3,6 +3,9 @@ import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { FormikProps } from 'formik';
 import type { QuestionnaireItem } from 'fhir/r4';
 import { QuestionnaireTheme } from '../../types';
+import { useNumberInput } from './useNumberInput';
+
+const MIN_VALUE_URL = 'http://hl7.org/fhir/StructureDefinition/minValue';
 
 interface DecimalQuestionProps {
   item: QuestionnaireItem;
@@ -16,6 +19,9 @@ interface DecimalQuestionProps {
 export function DecimalQuestion({ item, formik, theme }: DecimalQuestionProps) {
   const linkId = item.linkId!;
   const hasError = formik.touched[linkId] && formik.errors[linkId];
+  const minExtension = item.extension?.find((ext) => ext.url === MIN_VALUE_URL);
+  const min = minExtension?.valueInteger ?? minExtension?.valueDecimal;
+  const { text, onChangeText, keyboardType } = useNumberInput(formik, linkId, { integer: false, min });
 
   return (
     <View style={{ marginBottom: theme.spacing.lg }}>
@@ -59,13 +65,10 @@ export function DecimalQuestion({ item, formik, theme }: DecimalQuestionProps) {
             fontSize: theme.fontSize.md,
           },
         ]}
-        value={formik.values[linkId]?.toString() || ''}
-        onChangeText={(text) => {
-          const num = parseFloat(text);
-          formik.setFieldValue(linkId, isNaN(num) ? undefined : num);
-        }}
+        value={text}
+        onChangeText={onChangeText}
         onBlur={formik.handleBlur(linkId)}
-        keyboardType="decimal-pad"
+        keyboardType={keyboardType}
         accessibilityLabel={item.text}
         accessibilityHint="Enter a decimal number"
       />
