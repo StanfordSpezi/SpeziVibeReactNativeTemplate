@@ -21,10 +21,7 @@ export function DecimalQuestion({ item, formik, theme }: DecimalQuestionProps) {
   const hasError = formik.touched[linkId] && formik.errors[linkId];
   const minExtension = item.extension?.find((ext) => ext.url === MIN_VALUE_URL);
   const min = minExtension?.valueInteger ?? minExtension?.valueDecimal;
-  const { text, onChangeText, keyboardType } = useNumberInput(formik, linkId, {
-    integer: false,
-    allowNegative: min === undefined || min < 0,
-  });
+  const { text, onChangeText, keyboardType } = useNumberInput(formik, linkId, { integer: false, min });
 
   return (
     <View style={{ marginBottom: theme.spacing.lg }}>

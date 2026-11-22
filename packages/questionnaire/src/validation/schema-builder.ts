@@ -7,17 +7,27 @@ const RENDERED_TYPES = ['boolean', 'string', 'text', 'integer', 'decimal', 'date
 /** HH:MM, 24-hour. */
 export const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+export interface ValidationSchemaOptions {
+  /** Items hidden by enableWhen (and everything inside them), which aren't validated. See getDisabledLinkIds. */
+  disabledLinkIds?: ReadonlySet<string>;
+  /**
+   * Only validate items QuestionnaireForm can show: skip unsupported types, choices without answerOption, and items
+   * nested under a question (only groups show their children). Apps with their own renderers for those leave this
+   * off, so their required items are still checked.
+   */
+  onlyRendered?: boolean;
+}
+
 /**
  * Creates a Yup validation schema from FHIR Questionnaire items.
  *
- * Every question the form shows is validated: required questions must be answered, and min/max, whole numbers,
- * maxLength and time format are checked whenever a question has an answer. Questions the form doesn't show are
- * skipped, so they can't block submission: items in `disabledLinkIds` (hidden by enableWhen, see
- * getDisabledLinkIds), unsupported types, choices without answerOption, and items nested under a question.
+ * Every question is validated: required questions must be answered, and min/max, whole numbers, maxLength and time
+ * format are checked whenever a question has an answer, whether it's required or not. (Before 1.1.0, only required
+ * questions were validated.)
  */
 export function createValidationSchema(
   items: QuestionnaireItem[],
-  disabledLinkIds: ReadonlySet<string> = new Set()
+  { disabledLinkIds = new Set(), onlyRendered = false }: ValidationSchemaOptions = {}
 ): Yup.ObjectSchema<any> {
   const schema: Record<string, any> = {};
 
@@ -29,7 +39,8 @@ export function createValidationSchema(
       return;
     }
     if (item.type === 'group') {
-      item.item?.forEach((child) => processItem(child, false));
+      // A group nested under a question isn't shown either, nor is anything inside it.
+      item.item?.forEach((child) => processItem(child, underQuestion));
       return;
     }
 
@@ -38,7 +49,7 @@ export function createValidationSchema(
       !underQuestion &&
       RENDERED_TYPES.includes(item.type) &&
       !((item.type === 'choice' || item.type === 'open-choice') && !item.answerOption?.length);
-    if (isShown && item.linkId) {
+    if ((isShown || !onlyRendered) && item.linkId) {
       schema[item.linkId] = createValidationForItem(item);
     }
 

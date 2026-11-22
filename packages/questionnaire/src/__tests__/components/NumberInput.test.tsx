@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { Platform } from 'react-native';
 import { Formik, FormikProps } from 'formik';
 import type { QuestionnaireItem } from 'fhir/r4';
 import { DecimalQuestion } from '../../components/questions/DecimalQuestion';
@@ -64,5 +65,27 @@ describe('number fields', () => {
     field.type('a-');
     expect(field.input().props.value).toBe('-');
     expect(field.value()).toBeUndefined();
+  });
+
+  describe('keyboard', () => {
+    const MIN = (valueInteger: number) => [{ url: 'http://hl7.org/fhir/StructureDefinition/minValue', valueInteger }];
+    const keyboard = (item: QuestionnaireItem) => renderField(IntegerQuestion, item).input().props.keyboardType;
+    const originalOS = Platform.OS;
+    afterEach(() => {
+      Platform.OS = originalOS;
+    });
+
+    it('uses the number pad unless negative numbers are explicitly allowed', () => {
+      expect(keyboard({ linkId: 'a', type: 'integer', text: 'A' })).toBe('number-pad');
+      expect(keyboard({ linkId: 'b', type: 'integer', text: 'B', extension: MIN(0) })).toBe('number-pad');
+      expect(renderField(DecimalQuestion, { linkId: 'c', type: 'decimal', text: 'C' }).input().props.keyboardType).toBe('decimal-pad');
+    });
+
+    it('offers a minus key for a negative minimum', () => {
+      Platform.OS = 'ios';
+      expect(keyboard({ linkId: 'a', type: 'integer', text: 'A', extension: MIN(-10) })).toBe('numbers-and-punctuation');
+      Platform.OS = 'android';
+      expect(keyboard({ linkId: 'b', type: 'integer', text: 'B', extension: MIN(-10) })).toBe('numeric');
+    });
   });
 });

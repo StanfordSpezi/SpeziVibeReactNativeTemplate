@@ -55,10 +55,7 @@ export function IntegerQuestion({ item, formik, theme }: IntegerQuestionProps) {
   const hasError = formik.touched[linkId] && formik.errors[linkId];
   const { min, max } = getMinMax(item);
   const shouldRenderSlider = isSlider(item);
-  const { text, onChangeText, keyboardType } = useNumberInput(formik, linkId, {
-    integer: true,
-    allowNegative: min === undefined || min < 0,
-  });
+  const { text, onChangeText, keyboardType } = useNumberInput(formik, linkId, { integer: true, min });
 
   // If range is reasonable (1-20), show buttons; otherwise show input
   const shouldShowButtons = !shouldRenderSlider && min !== undefined && max !== undefined && max - min <= 20;

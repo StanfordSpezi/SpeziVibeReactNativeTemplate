@@ -826,7 +826,7 @@ Apps get a copy of this package when they're created, so an app keeps the versio
 
 | Version | Changes |
 |---|---|
-| 1.1.0 | Validates every shown question (limits apply to optional questions) and skips hidden or unshown ones, so they no longer block Submit. Leaves answers to hidden questions out of the response. Saves `valueString` and `valueInteger` choice answers, and time answers as `hh:mm:ss`. Saves dates in local time. Number fields accept a decimal point and a minus sign. |
+| 1.1.0 | `QuestionnaireForm` validates every shown question (limits apply to optional questions) and skips hidden or unshown ones, so they no longer block Submit. Answers to hidden questions are treated as absent: they're left out of the response and don't keep other questions shown. Saves `valueString` and `valueInteger` choice answers, time answers as `hh:mm:ss`, and dates in local time. Number fields accept a decimal point, and a minus sign unless the minimum rules it out; the keyboard offers one when the minimum is negative. `createValidationSchema` now also validates optional questions, and takes `{ disabledLinkIds, onlyRendered }` options. |
 | 1.0.0 | First version. |
 
 ## Contributing

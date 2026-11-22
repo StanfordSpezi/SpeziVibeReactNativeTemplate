@@ -67,6 +67,29 @@ describe('QuestionnaireForm submission', () => {
       expect(result.response.item.map((i: { linkId: string }) => i.linkId)).toEqual(['smoker']);
     });
 
+    it('treats answers to hidden questions as absent, so questions depending on them are hidden too', async () => {
+      const chain = q(
+        { linkId: 'q1', type: 'boolean', text: 'Q1' },
+        { linkId: 'q2', type: 'boolean', text: 'Q2', enableWhen: [{ question: 'q1', operator: '=', answerBoolean: true }] },
+        {
+          linkId: 'q3',
+          type: 'string',
+          text: 'Q3',
+          required: true,
+          enableWhen: [{ question: 'q2', operator: '=', answerBoolean: true }],
+        }
+      );
+      // Q2 was answered before Q1 changed and hid it, so its stale answer must not keep Q3 shown (and required).
+      const { result, screen } = await submit(chain, [
+        { linkId: 'q1', answer: [{ valueBoolean: false }] },
+        { linkId: 'q2', answer: [{ valueBoolean: true }] },
+        { linkId: 'q3', answer: [{ valueString: 'stale' }] },
+      ]);
+      expect(result.status).toBe('completed');
+      expect(result.response.item.map((i: { linkId: string }) => i.linkId)).toEqual(['q1']);
+      expect(screen.queryByText('Q3')).toBeNull();
+    });
+
     it('treats questions in a hidden group as hidden', async () => {
       const questionnaire = q(
         { linkId: 'smoker', type: 'boolean', text: 'Do you smoke?' },
@@ -88,7 +111,13 @@ describe('QuestionnaireForm submission', () => {
       q(
         { linkId: 'photo', type: 'attachment', text: 'Photo', required: true },
         { linkId: 'vs', type: 'choice', text: 'From a value set', required: true, answerValueSet: '#vs' },
-        { linkId: 'parent', type: 'string', text: 'Parent', item: [{ linkId: 'child', type: 'string', text: 'Child', required: true }] }
+        { linkId: 'parent', type: 'string', text: 'Parent', item: [{ linkId: 'child', type: 'string', text: 'Child', required: true }] },
+        {
+          linkId: 'parent2',
+          type: 'boolean',
+          text: 'Parent 2',
+          item: [{ linkId: 'nested', type: 'group', item: [{ linkId: 'deep', type: 'string', text: 'Deep', required: true }] }],
+        }
       )
     );
     expect(result.status).toBe('completed');

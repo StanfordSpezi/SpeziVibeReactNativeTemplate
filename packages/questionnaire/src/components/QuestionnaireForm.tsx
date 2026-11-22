@@ -172,6 +172,15 @@ function buildQuestionnaireResponse(
   };
 }
 
+/**
+ * The response for the questions currently shown, and which questions are hidden. Answers to hidden questions are
+ * left out, so they can't keep other questions shown either.
+ */
+function currentState(questionnaire: Questionnaire, values: Record<string, unknown>) {
+  const disabled = getDisabledLinkIds(questionnaire, (hidden) => buildQuestionnaireResponse(questionnaire, values, hidden));
+  return { disabled, response: buildQuestionnaireResponse(questionnaire, values, disabled) };
+}
+
 export function QuestionnaireForm({
   questionnaire,
   onResult,
@@ -191,10 +200,17 @@ export function QuestionnaireForm({
   // Which items are hidden depends on the answers so far, so the schema is built on every validation.
   const validate = useCallback(
     (values: Record<string, unknown>) => {
-      const disabled = getDisabledLinkIds(questionnaire, buildQuestionnaireResponse(questionnaire, values));
-      return validateYupSchema(values, createValidationSchema(questionnaire.item || [], disabled)).then(
+      const { disabled } = currentState(questionnaire, values);
+      const schema = createValidationSchema(questionnaire.item || [], { disabledLinkIds: disabled, onlyRendered: true });
+      return validateYupSchema(values, schema).then(
         () => ({}),
-        (error) => yupToFormErrors(error)
+        (error) => {
+          // Report invalid answers; let anything else (a bug) surface instead of reading as "no errors".
+          if (error?.name === 'ValidationError') {
+            return yupToFormErrors(error);
+          }
+          throw error;
+        }
       );
     },
     [questionnaire]
@@ -211,10 +227,7 @@ export function QuestionnaireForm({
   // Track form values for enableWhen evaluation
   const [formValues, setFormValues] = useState<Record<string, unknown>>(initialValues);
 
-  const currentResponse = useMemo(
-    () => buildQuestionnaireResponse(questionnaire, formValues),
-    [questionnaire, formValues]
-  );
+  const currentResponse = useMemo(() => currentState(questionnaire, formValues).response, [questionnaire, formValues]);
 
   const handleCancel = useCallback(() => {
     if (cancelBehavior === 'disabled') return;
@@ -257,8 +270,7 @@ export function QuestionnaireForm({
     setIsSubmitting(true);
     try {
       // Answers to questions that are hidden now (for example, after changing an earlier answer) are left out.
-      const disabled = getDisabledLinkIds(questionnaire, buildQuestionnaireResponse(questionnaire, values));
-      const response = buildQuestionnaireResponse(questionnaire, values, disabled);
+      const { response } = currentState(questionnaire, values);
 
       if (completionMessage) {
         setCompletedResponse(response);

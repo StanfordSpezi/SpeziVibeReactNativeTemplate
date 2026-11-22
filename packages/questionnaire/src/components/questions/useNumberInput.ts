@@ -13,8 +13,13 @@ const DECIMAL_TEXT = /^-?\d*([.,]\d*)?$/;
 export function useNumberInput(
   formik: FormikProps<Record<string, unknown>>,
   linkId: string,
-  { integer, allowNegative }: { integer: boolean; allowNegative: boolean }
+  { integer, min }: { integer: boolean; min?: number }
 ) {
+  // A minus sign is accepted unless the minimum rules it out. The keyboard only offers one when the question
+  // explicitly allows negative numbers: the number pads have no minus key on iOS, but the alternative there is the
+  // full symbols keyboard, which is worse for the usual case of positive numbers.
+  const allowNegative = min === undefined || min < 0;
+  const offerMinusKey = min !== undefined && min < 0;
   const value = formik.values[linkId];
   const [text, setText] = useState(value === undefined || value === null ? '' : String(value));
 
@@ -36,9 +41,11 @@ export function useNumberInput(
     formik.setFieldValue(linkId, parse(input, integer));
   };
 
-  // The number pads on iOS have no minus key.
-  const keyboardType: KeyboardTypeOptions =
-    allowNegative && Platform.OS === 'ios' ? 'numbers-and-punctuation' : integer ? 'number-pad' : 'decimal-pad';
+  let keyboardType: KeyboardTypeOptions = integer ? 'number-pad' : 'decimal-pad';
+  if (offerMinusKey) {
+    // On Android, 'numeric' is a signed number keyboard; iOS has no signed number pad.
+    keyboardType = Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric';
+  }
 
   return { text, onChangeText, keyboardType };
 }

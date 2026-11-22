@@ -812,6 +812,7 @@ exports[`Generator Snapshots Full Configuration (Firebase + All Features) should
   "packages/questionnaire/src/__tests__/types.test.ts",
   "packages/questionnaire/src/__tests__/utils/fhirDate.test.ts",
   "packages/questionnaire/src/__tests__/validation/schema-builder.test.ts",
+  "packages/questionnaire/src/__tests__/validation/schema-options.test.ts",
   "packages/questionnaire/src/builders/QuestionnaireBuilder.ts",
   "packages/questionnaire/src/components/ErrorBoundary.tsx",
   "packages/questionnaire/src/components/QuestionRenderer.tsx",
